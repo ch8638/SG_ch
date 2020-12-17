@@ -1,15 +1,11 @@
 import sqlite3
 import sys
 import datetime
-import xlwt
 import os
-import re
 import shutil
-from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 
 db_con = "C:\\WorkList\\WorkList.db"  ########################## 경로 수정
-
 
 class Singleton(type):  # Type을 상속받음
     __instances = {}  # 클래스의 인스턴스를 저장할 속성
@@ -258,7 +254,7 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
         cur.close()
         conn.close()
 
-    # 생성된 Inst 바코드 파일을 불러오면서 프로토콜 기본 setting값을 Temp 테이블에 저장
+    # 생성된 Inst 바코드 파일을 불러오면서 프로토콜 이름을 Temp 테이블에 저장
     def Inst_bcd_path(self, bcd_path):
         conn = sqlite3.connect(db_con)
         cur = conn.cursor()

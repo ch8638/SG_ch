@@ -5,10 +5,6 @@ import sys
 import os
 import datetime
 import csv
-import sqlite3
-import ctypes
-import subprocess
-import time
 from WorkList_db import WorkList_db_class
 
 class Ui_MainWindow(QtWidgets.QDialog):
@@ -240,7 +236,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
         self.pushButton_prev_1.setGeometry(QtCore.QRect(30, 750, 93, 28))
         self.pushButton_prev_1.setObjectName("pushButton_prev_1")
         self.listWidget_protocol = QtWidgets.QListWidget(self.tab_2)
-        self.listWidget_protocol.setGeometry(QtCore.QRect(110, 120, 370, 71))
+        self.listWidget_protocol.setGeometry(QtCore.QRect(110, 120, 370, 100))
         self.listWidget_protocol.setObjectName("listWidget_protocol")
         self.listWidget_protocol.setEnabled(False)
         self.pushButton_run = QtWidgets.QPushButton(self.tab_2)
@@ -935,6 +931,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
     # Run 버튼(DB에 정보 입력, plrn 생성)
     def Run(self):
         try:
+            QtWidgets.QMessageBox.information(self, "System", "Please close the door.")
             test_count = self.textBrowser_testcount.toPlainText()
             smp_count = self.tableWidget_smp_select.rowCount()  ########################### self.tableWidget_smp 변경
             count = int(test_count) - smp_count
@@ -1068,7 +1065,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
 
                 cnt += 1
 
-			# 텍스트파일의 라인수보다 샘플카운트가 크거나 같다면 임시바코드리스트에 라인수만큼 넣어줌.
+            # 텍스트파일의 라인수보다 샘플카운트가 크거나 같다면 임시바코드리스트에 라인수만큼 넣어줌.
             if len(lines) <= int(self.lineEdit_smp_count.text()):
                 for i in range(len(lines)):
                     self.temp_bcd_list.append((self.tableWidget_smp.item(i, 0)).text())
