@@ -310,8 +310,41 @@ class Ui_MainWindow(QtWidgets.QDialog):
         font.setWeight(75)
         self.label_testcount.setFont(font)
         self.label_testcount.setObjectName("label_testcount")
-        self.label_path = QtWidgets.QLabel(self.tab_2)
-        self.label_path.setGeometry(QtCore.QRect(30, 660, 150, 31))
+
+
+        self.label_PCR_plate = QtWidgets.QLabel(self.tab_2)
+        self.label_PCR_plate.setGeometry(QtCore.QRect(30, 500, 180, 31))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_PCR_plate.setFont(font)
+        self.label_PCR_plate.setObjectName("label_PCR_plate")
+        self.lineEdit_PCR_plate = QtWidgets.QLineEdit(self.tab_2)
+        self.lineEdit_PCR_plate.setGeometry(QtCore.QRect(210, 506, 251, 20))
+        font = QtGui.QFont()
+        font.setKerning(True)
+        self.lineEdit_PCR_plate.setFont(font)
+        self.lineEdit_PCR_plate.setStyleSheet("")
+        self.lineEdit_PCR_plate.setObjectName("lineEdit_PCR_plate")
+
+        self.label_DWP = QtWidgets.QLabel(self.tab_2)
+        self.label_DWP.setGeometry(QtCore.QRect(30, 560, 120, 31))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_DWP.setFont(font)
+        self.label_DWP.setObjectName("label_DWP")
+        self.lineEdit_DWP = QtWidgets.QLineEdit(self.tab_2)
+        self.lineEdit_DWP.setGeometry(QtCore.QRect(210, 566, 251, 20))
+        font = QtGui.QFont()
+        font.setKerning(True)
+        self.lineEdit_DWP.setFont(font)
+        self.lineEdit_DWP.setStyleSheet("")
+        self.lineEdit_DWP.setObjectName("lineEdit_DWP")
+
+
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(True)
@@ -616,6 +649,8 @@ class Ui_MainWindow(QtWidgets.QDialog):
         self.radioButton_cap_2.setText(_translate("MainWindow", "Film"))
         self.label_pcr_bcd.setText(_translate("MainWindow", "PCR Reagent Barcode"))
         self.label_testcount.setText(_translate("MainWindow", "Test Count"))
+        self.label_PCR_plate.setText(_translate("MainWindow", "PCR Plate Barcode"))
+        self.label_DWP.setText(_translate("MainWindow", "DWP Barcode"))
         self.textBrowser_testcount.setHtml(_translate("MainWindow",
                                                       "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
                                                       "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
@@ -674,8 +709,6 @@ class Ui_MainWindow(QtWidgets.QDialog):
 
         self.lineEdit_pcr_bcd.returnPressed.connect(self.display_test_count)
         self.lineEdit_pcr_bcd.returnPressed.connect(self.check_test_count)
-        # self.pushButton_reload.clicked.connect(self.Reload)
-        # self.pushButton_copy.clicked.connect(self.Copy)
         self.pushButton_hidden.clicked.connect(self.Hidden)
 
         self.add_path_2.clicked.connect(lambda: self.enable_path(2))  # add path 체크
@@ -686,7 +719,13 @@ class Ui_MainWindow(QtWidgets.QDialog):
         self.pushButton_confirm.clicked.connect(self.Confirm)
         self.pushButton_cancel.clicked.connect(self.Cancel)
 
+        self.lineEdit_PCR_plate.returnPressed.connect(self.focus_DWP)
+
         self.update_setting()
+
+    # PCR Plate 바코드 스캔시 DWP 바코드로 포커스 이동
+    def focus_DWP(self):
+        self.lineEdit_DWP.setFocus()
 
     # 해당 바코드 선택시 배경화면 변경하는 기능
     def Sel_List(self):
@@ -818,6 +857,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
         test_count = self.DB.PCR_test_count(pcr_bcd)
         self.textBrowser_testcount.setText(test_count)
 
+    # PCR 시약 잔량과 샘플수 비교
     def check_test_count(self):
         test_count = self.textBrowser_testcount.toPlainText()
         smp_count = self.tableWidget_smp_select.rowCount()
@@ -838,6 +878,8 @@ class Ui_MainWindow(QtWidgets.QDialog):
                 self.selection_bcd = self.buttonGroup_1.checkedButton().text()
                 self.pushButton_confirm.setEnabled(True)
         except:
+            self.pushButton_confirm.setEnabled(False)
+            self.selection_bcd = self.buttonGroup_1.checkedButton().text()
             QtWidgets.QMessageBox.information(self, "System", "Please enter the count of samples.")
 
     def Select_plate(self):
@@ -933,23 +975,28 @@ class Ui_MainWindow(QtWidgets.QDialog):
         try:
             QtWidgets.QMessageBox.information(self, "System", "Please close the door.")
             test_count = self.textBrowser_testcount.toPlainText()
-            smp_count = self.tableWidget_smp_select.rowCount()  ########################### self.tableWidget_smp 변경
+            smp_count = self.tableWidget_smp_select.rowCount()
             count = int(test_count) - smp_count
             if self.listWidget_protocol.currentItem() != None and self.lineEdit_pcr_bcd.text() != "" and count >= 0:
                 smp_bcd = []
+                worklist_bcd = []
+                inst_bcd = []
                 date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
                 Protocol_Name = self.listWidget_protocol.currentItem().text()
                 rowCount = self.tableWidget_smp_select.rowCount()
                 pcr_bcd = self.lineEdit_pcr_bcd.text()
                 for i in range(rowCount):
                     smp_bcd.append(self.tableWidget_smp_select.item(i, 0).text())
-
                 id_plrn = self.DB.Input_plrn_data(date, Protocol_Name, rowCount, self.plate_type, self.cap_type,
-                                                  self.ctrl_seq, pcr_bcd, self.selection_bcd)
+                                                  self.ctrl_seq, pcr_bcd, self.selection_bcd, self.lineEdit_PCR_plate.text(), self.lineEdit_DWP.text())
                 self.DB.Input_sample_data(smp_bcd, id_plrn)
                 self.DB.Use_PCR(pcr_bcd, rowCount)
                 self.DB.make_plrn(id_plrn)
                 self.DB.save_Temp(Protocol_Name, self.plate_type, self.cap_type, self.ctrl_seq)
+                if self.tableWidget_smp.item(0, 0) is not None:
+                    for j in range(rowCount):
+                        worklist_bcd.append(self.tableWidget_smp.item(j, 0).text())
+                    self.DB.Create_barcode(id_plrn, worklist_bcd)
                 self.textBrowser_testcount.setText(str(count))
 
             elif self.listWidget_protocol.currentItem() == None or self.lineEdit_pcr_bcd.text() == "":
