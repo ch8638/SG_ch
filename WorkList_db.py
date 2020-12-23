@@ -5,7 +5,7 @@ import os
 import shutil
 import sys
 
-db_con = "C:\\WorkList\\WorkList.db"  ########################## 경로 수정
+db_con = "C:\\WorkList\\WorkList.db" ## 경로 수정
 
 
 class Singleton(type):  # Type을 상속받음
@@ -21,7 +21,7 @@ class Singleton(type):  # Type을 상속받음
 
 
 class WorkList_db_class(metaclass=Singleton):
-    bcd_file_path = "C:\\TCWM"
+    bcd_file_path = "C:\\TCWM" # 기본 백업 폴더(없을 경우 생성)
 
     # Info_plrn 테이블에 plrn 데이터 입력 후 ID 생성
     def Input_plrn_data(self, date, protocol_name, smp_num, plate_type, cap_type, ctrl_seq, pcr_bcd, bcd_list,
@@ -415,7 +415,7 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
             shutil.copy(info[0][1],
                         temp_inst + "\\Instrument Barcode" + f"\\{self.id_plrn}_{date}_{protocol_name}.txt")
 
-        if dir_csv == "":  # WorkList 파일이 없는 경우 .txt 파일 생성
+        if bcd_list != [] and dir_csv == "":  # WorkList 파일이 없는 경우 .txt 파일 생성
             pos_1 = ['A', 'B', 'C', 'D', 'E', 'F']
             f = open(worklist_dir + f"\\{self.id_plrn}_{date}_{protocol_name}.txt", 'w')
             header = "SEQ\tPOS\tCODE\n"
@@ -433,7 +433,7 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
                 shutil.copy(worklist_dir + f"\\{self.id_plrn}_{date}_{protocol_name}.txt",
                             temp_worklist + "\\WorkList" + f"\\{self.id_plrn}_{date}_{protocol_name}.txt")
 
-        elif dir_csv != "":  # WorkList 파일이 있는 경우 파일 복사
+        elif bcd_list != [] and dir_csv != "":  # WorkList 파일이 있는 경우 파일 복사
             shutil.copy(dir_csv, worklist_dir + f"\\{self.id_plrn}_{date}_{protocol_name}.csv")
             if temp_worklist != self.bcd_file_path:
                 self.make_dir(temp_worklist + "\\WorkList")

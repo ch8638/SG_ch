@@ -5,16 +5,6 @@ import sys
 import os
 import datetime
 import csv
-<<<<<<< HEAD
-import sqlite3
-import ctypes
-import subprocess
-import time
-
-from Monitering.WorkList_db import WorkList_db_class
-
-=======
->>>>>>> d9449acfe18444e59fbc5ff7197d8cfdce921d99
 from WorkList_db import WorkList_db_class
 from cryptography.fernet import Fernet
 
@@ -26,7 +16,6 @@ class Singleton(type):  # Type을 상속받음
         if cls not in cls.__instances:  # 클래스로 인스턴스를 생성하지 않았는지 확인
             cls.__instances[cls] = super().__call__(*args, **kwargs)  # 생성하지 않았으면 인스턴스를 생성하여 해당 클래스 사전에 저장
         return cls.__instances[cls]  # 클래스로 인스턴스를 생성했으면 인스턴스 반환
-
 
 
 class Ui_MainWindow(QtWidgets.QDialog):
@@ -43,8 +32,6 @@ class Ui_MainWindow(QtWidgets.QDialog):
     bcd_list = []
     temp_bcd_list = []
     DB = WorkList_db_class()
-
-    # simpleEnDecrypt = SimpleEnDecrypt()
 
     def __init__(self):
         super().__init__()
@@ -1191,7 +1178,6 @@ class Ui_MainWindow(QtWidgets.QDialog):
             if self.listWidget_protocol.currentItem() != None and self.lineEdit_pcr_bcd.text() != "" and count >= 0:
                 smp_bcd = []
                 worklist_bcd = []
-                inst_bcd = []
                 date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
                 Protocol_Name = self.listWidget_protocol.currentItem().text()
                 rowCount = self.tableWidget_smp_select.rowCount()
@@ -1208,7 +1194,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
                 if self.tableWidget_smp.item(0, 0) is not None:
                     for j in range(rowCount):
                         worklist_bcd.append(self.tableWidget_smp.item(j, 0).text())
-                    self.DB.Create_barcode(id_plrn, worklist_bcd, self.path_csv)
+                self.DB.Create_barcode(id_plrn, worklist_bcd, self.path_csv)
                 self.DB.delete_bcd()
                 self.textBrowser_testcount.setText(str(count))
 
@@ -1319,15 +1305,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
                 if cnt >= int(self.lineEdit_smp_count.text()):
                     break
 
-<<<<<<< HEAD
-
-         # 텍스트파일의 라인수보다 샘플카운트가 크거나 같다면 임시바코드리스트에 라인수만큼 넣어줌.
-
-			# 텍스트파일의 라인수보다 샘플카운트가 크거나 같다면 임시바코드리스트에 라인수만큼 넣어줌.
-
-=======
             # 텍스트파일의 라인수보다 샘플카운트가 크거나 같다면 임시바코드리스트에 라인수만큼 넣어줌.
->>>>>>> d9449acfe18444e59fbc5ff7197d8cfdce921d99
             if len(lines) <= int(self.lineEdit_smp_count.text()):
                 for i in range(len(lines)):
                     self.temp_bcd_list.append((self.tableWidget_smp.item(i, 0)).text())

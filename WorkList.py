@@ -11,19 +11,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import os
 import time
-import Monitering.MainUI
-import Monitering.SubUI
-from Monitering.WorkList_db import WorkList_db_class
-
 import MainUI
 import SubUI
 from WorkList_db import WorkList_db_class
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> d9449acfe18444e59fbc5ff7197d8cfdce921d99
 class Singleton(type):  # Type을 상속받음
     __instances = {}  # 클래스의 인스턴스를 저장할 속성
 
@@ -44,13 +35,11 @@ except ModuleNotFoundError as e:
     print(e)
     os.system("pip install watchdog")
 
-
 class Handler(FileSystemEventHandler):
     def on_created(self, event):  # 파일 생성시
         # Ui_MainWindow.temp_src = "A" #
         temp = event.src_path
         temp = temp.replace('\\', '/')  # 경로는 \\가 아닌 /로 치환
-        bcd_file_path = "C:\\TCWM"
 
         DB.Inst_bcd_path(event.src_path)
 
@@ -78,16 +67,7 @@ class Handler(FileSystemEventHandler):
                 if temp == -1:  # Extraction이 들어가지 않은 경우에만 화면 띄워주는 시그널을 1로 줌
                     Watcher.temp = 1
                     import shutil  # 파일을 다른곳에 백업 시켜둠.
-<<<<<<< HEAD
-
-                    shutil.copy(event.src_path, "C:\shinhoo\Monitering\Temp\\")  ########## 경
-
-                    shutil.copy(event.src_path, "C:\\Barcode\\")  ########## 경
-
-=======
                     shutil.copy(event.src_path, "C:\\Barcode\\")
->>>>>>> d9449acfe18444e59fbc5ff7197d8cfdce921d99
-
 
             elif Extension == '.exe':
 
@@ -157,12 +137,8 @@ class Watcher(metaclass=Singleton):
 
     # 화면 불러오는 기능
     def Main(self):
-        dialog_main = Monitering.MainUI.Ui_MainWindow()  # 배경화면 화면 객체생성
-        dialog_sub = Monitering.SubUI.Ui_MainWindow()  # 바코드 비교화면 객체생성
-
         dialog_main = MainUI.Ui_MainWindow()  # 배경화면 화면 객체생성
         dialog_sub = SubUI.Ui_MainWindow()  # 바코드 비교화면 객체생성
-
         dialog_main.showFullScreen()  # 배경화면은 전체화면으로 띄워줌
         dialog_sub.exec_()  # 바코드 비교화면 실행
         dialog_sub.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)  # 비교화면을 가장 최상단으로 만들어줌.
