@@ -41,6 +41,7 @@ class Handler(FileSystemEventHandler):
         # Ui_MainWindow.temp_src = "A" #
         temp = event.src_path
         temp = temp.replace('\\', '/')  # 경로는 \\가 아닌 /로 치환
+        bcd_file_path = "C:\\TCWM"
 
         DB.Inst_bcd_path(event.src_path)
 
@@ -65,11 +66,10 @@ class Handler(FileSystemEventHandler):
             temp = temp.find("Extraction")
 
             if Extension == '.txt':  # txt 파일만 추출
-                if temp == -1:  # Extraction이 들어가지 않은 경우에만  화면 띄워주는 시그널을 1로 줌
+                if temp == -1:  # Extraction이 들어가지 않은 경우에만 화면 띄워주는 시그널을 1로 줌
                     Watcher.temp = 1
                     import shutil  # 파일을 다른곳에 백업 시켜둠.
                     shutil.copy(event.src_path, "C:\\Barcode\\")
-
 
             elif Extension == '.exe':
 
