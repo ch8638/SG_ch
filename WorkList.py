@@ -146,12 +146,35 @@ class Watcher(metaclass=Singleton):
 
 
 if __name__ == "__main__":
+    DB_dlr = "C:\WorkList"
+    TCW_dlr = "C:\TCW"
+    WorkList_dlr = "C:\TCW\WorkList"
+    Plrn_dlr = "C:\TCW\WorkList\Plrn"
+    import shutil
+    try:
+        if not (os.path.isdir(DB_dlr)):
+            os.makedirs(os.path.join(DB_dlr))
+        if not (os.path.isdir(TCW_dlr)):
+            os.makedirs(os.path.join(TCW_dlr))
+        if not (os.path.isdir(WorkList_dlr)):
+            os.makedirs(os.path.join(WorkList_dlr))
+        if not (os.path.isdir(Plrn_dlr)):
+            os.makedirs(os.path.join(Plrn_dlr))
+        if not (os.path.isfile("C:\WorkList\\WorkList.db")): # 해당 경로에 DB파일 있는지 확인
+            import win32api
+            win32api.MoveFile("./WorkList.db", "C:/WorkList/WorkList.db") # 없으면 해당 경로로 DB파일 이동
+
+    except OSError as e:
+        print(e)
     DB = WorkList_db_class()
     temp = 0
 
     PE_path = DB.show_PE_path()
-    PE_path = PE_path[0][0]
-    os.startfile(PE_path)
+    PE_path = (PE_path[0][0])
+
+    import win32api
+    win32api.ShellExecute(0, "OPEN", PE_path, None, None, 1) # PreNATII.exe 실행
+
     import psutil  # 실행중인 프로세스 및 시스템 활용 라이브러리
 
     for proc in psutil.process_iter():
@@ -159,12 +182,12 @@ if __name__ == "__main__":
             # 프로세스 이름, PID값 가져오기
             processName = proc.name()
             processID = proc.pid
+            temp = os.getpid()
 
             if processName == "WorkList.exe":
-                temp += 1
                 parent_pid = processID  # PID
                 parent = psutil.Process(parent_pid)  # PID 찾기
-                if temp >= 2:
+                if processID != temp:
                     for child in parent.children(recursive=True):  # 자식-부모 종료
                         child.kill()
                     parent.kill()

@@ -6,6 +6,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
         self.initUI()
 
     def initUI(self):
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.setGeometry(0, 0, 1920, 1080)
         self.setWindowOpacity(0.7)

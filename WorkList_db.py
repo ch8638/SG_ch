@@ -21,7 +21,7 @@ class Singleton(type):  # Type을 상속받음
 
 
 class WorkList_db_class(metaclass=Singleton):
-    bcd_file_path = "C:\\TCWM" # 기본 백업 폴더(없을 경우 생성)
+    bcd_file_path = "C:\\TCW" # 기본 백업 폴더(없을 경우 생성)
 
     # Info_plrn 테이블에 plrn 데이터 입력 후 ID 생성
     def Input_plrn_data(self, date, protocol_name, smp_num, plate_type, cap_type, ctrl_seq, pcr_bcd, bcd_list,
@@ -198,20 +198,21 @@ class WorkList_db_class(metaclass=Singleton):
         conn = sqlite3.connect(db_con)
         cur = conn.cursor()
 
+        # plrn 파일 생성에 필요한 프로토콜 및 샘플 정보를 불러온다.
         cur.execute("select * from Info_plrn where ID = (%s)" % ("'" + self.id_plrn + "'"))
         info_plrn = cur.fetchall()
         cur.execute("select Smp_bcd from Info_smp where ID = (%s)" % ("'" + self.id_plrn + "'"))
         info_smp = cur.fetchall()
 
-        date = info_plrn[0][1]
-        Protocol_Name = info_plrn[0][2]
-        smp_num = info_plrn[0][3]
-        plate_type = info_plrn[0][4]
-        cap_type = info_plrn[0][5]
-        ctrl_seq = info_plrn[0][6]
-        pcr_bcd = info_plrn[0][7]
-        plateBarcode = info_plrn[0][9]
-        dwp_bcd = info_plrn[0][10]
+        date = info_plrn[0][1] # 날짜
+        Protocol_Name = info_plrn[0][2] # 프로토콜 이름
+        smp_num = info_plrn[0][3] # 샘플 개수
+        plate_type = info_plrn[0][4] # Plate 종류
+        cap_type = info_plrn[0][5] # Cap 종류
+        ctrl_seq = info_plrn[0][6] # NC, PC 순서
+        pcr_bcd = info_plrn[0][7] # PCR 시약 바코드
+        plateBarcode = info_plrn[0][9] # PCR Plate 바코드
+        dwp_bcd = info_plrn[0][10] # DWP 바코드
 
         smp_bcd = []
         for i in range(smp_num):
@@ -227,20 +228,20 @@ class WorkList_db_class(metaclass=Singleton):
             PatientList.append("''")
         PatientName = ",".join(map(str, PatientList))
 
-        if dwp_bcd == "" and plateBarcode == "":
+        if dwp_bcd == "" and plateBarcode == "": # DWP, PCR Plate 바코드 스캔 안 한 경우
             file_name = f"plrn, {Inst_Name}, {date}, {Protocol_Name}.plrn"
-        elif dwp_bcd != "" and plateBarcode == "":
+        elif dwp_bcd != "" and plateBarcode == "": # DWP 바코드만 스캔
             file_name = f"plrn, {Inst_Name}, {date}, {Protocol_Name}, {dwp_bcd}.plrn"
-        elif dwp_bcd == "" and plateBarcode != "":
+        elif dwp_bcd == "" and plateBarcode != "": # PCR Plate 바코드만 스캔
             file_name = f"plrn, {Inst_Name}, {date}, {Protocol_Name}, {plateBarcode}.plrn"
-        elif dwp_bcd != "" and plateBarcode != "":
+        elif dwp_bcd != "" and plateBarcode != "": # DWP, PCR Plate 바코드 스캔
             file_name = f"plrn, {Inst_Name}, {date}, {Protocol_Name}, {dwp_bcd}, {plateBarcode}.plrn"
 
-        cur.execute("select * from Path_plrn")
+        cur.execute("select * from Path_plrn") # Option에서 설정한 plrn 경로
         dir_plrn = cur.fetchall()
         dir_plrn_1 = dir_plrn[0][0].replace("/", "\\") + f"\\{Protocol_Name}\\" + file_name
 
-        self.make_dir(dir_plrn[0][0] + f"\\{Protocol_Name}")
+        self.make_dir(dir_plrn[0][0] + f"\\{Protocol_Name}") # 설정한 경로에 {프로토콜 이름} 폴더 생성
         smp = ""
         plt_pos = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         for i in range(smp_num + 2):
@@ -279,13 +280,13 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
 
         add_path_2 = dir_plrn[0][1]
         add_path_3 = dir_plrn[0][2]
-        if add_path_2 != "":
+        if add_path_2 != "": # plrn 파일 생성 경로 2
             add_path_2 = add_path_2.replace("/", "\\") + f"\\{Protocol_Name}"
             self.make_dir(add_path_2)
             add_path_2 = add_path_2 + f"\\" + file_name
             shutil.copy(dir_plrn_1, add_path_2)
 
-        if add_path_3 != "":
+        if add_path_3 != "": # plrn 파일 생성 경로 3
             add_path_3 = add_path_3.replace("/", "\\") + f"\\{Protocol_Name}"
             self.make_dir(add_path_3)
             add_path_3 = add_path_3 + f"\\" + file_name
@@ -322,17 +323,15 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
         cur = conn.cursor()
         cur.execute("update Monitor set Inst_bcd = (%s)" % ("'" + bcd_path + "'"))
         conn.commit()
-        cur.execute("select Inst_bcd from Monitor")
-        inst_bcd_path = cur.fetchall()
 
-        temp = inst_bcd_path[0][0].split("\\")
+        temp = bcd_path.split("\\")
         protocol_name = temp[-2].split("_")
 
         cur.execute("select Protocol_Name from Temp where Protocol_Name = (%s)" % ("'" + protocol_name[-1] + "'"))
         name = cur.fetchall()
         if name == []:
             cur.execute("insert into Temp(Protocol_Name, Plate_Type, Cap_Type, Control, Use_bcd) values(?, ?, ?, ?, ?)",
-                        (protocol_name[-1], "Plate", "Cap", "NC, PC", "Not used"))
+                        (protocol_name[-1], "Plate", "Cap", "NC, PC", "PCR Plate and DWP"))
             conn.commit()
         cur.close()
         conn.close()
@@ -388,12 +387,23 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
         conn.close()
         return b_info
 
-    # WorkList 바코드 파일을 생성한다.
-    def Create_barcode(self, id_plrn, bcd_list, dir_csv):
+    def Sel_Protocol(self):
+        conn = sqlite3.connect(db_con)
+        cur = conn.cursor()
+        cur.execute("select Protocol_Name from Temp")
+        protocol_list = cur.fetchall()
+        cur.close()
+        conn.close()
+        return protocol_list
+
+    # WorkList, Instrument 바코드 파일을 생성한다.
+    def Create_barcode(self, id_plrn, bcd_list, dir_csv, worklist_name):
         worklist_dir = self.bcd_file_path + "\\WorkList"
         Inst_dir = self.bcd_file_path + "\\Instrument Barcode"
+        Plrn_dlr = self.bcd_file_path + "\\WorkList\\Plrn"
         self.make_dir(worklist_dir)
         self.make_dir(Inst_dir)
+        self.make_dir(Plrn_dlr)
 
         self.id_plrn = str(id_plrn)
         date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -434,12 +444,12 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
                             temp_worklist + "\\WorkList" + f"\\{self.id_plrn}_{date}_{protocol_name}.txt")
 
         elif bcd_list != [] and dir_csv != "":  # WorkList 파일이 있는 경우 파일 복사
-            shutil.copy(dir_csv, worklist_dir + f"\\{self.id_plrn}_{date}_{protocol_name}.csv")
+            shutil.copy(dir_csv, worklist_dir + f"\\{self.id_plrn}_{date}_{protocol_name}_{worklist_name}.csv")
             if temp_worklist != self.bcd_file_path:
                 self.make_dir(temp_worklist + "\\WorkList")
-                shutil.copy(dir_csv, temp_worklist + "\\WorkList" + f"\\{self.id_plrn}_{date}_{protocol_name}.csv")
+                shutil.copy(dir_csv, temp_worklist + "\\WorkList" + f"\\{self.id_plrn}_{date}_{protocol_name}_{worklist_name}.csv")
 
-    # 샘플 정보 삭제
+    # 샘플 정보 사용 후 삭제
     def delete_bcd(self):
         conn = sqlite3.connect(db_con)
         cur = conn.cursor()
@@ -455,3 +465,22 @@ Well,Ch1 Dye,Ch2 Dye,Ch3 Dye,Ch4 Dye,Ch5 Dye,FRET,Sample Type,Sample Name,Ch1 Ta
                 os.makedirs(os.path.join(dir))
         except OSError as e:
             print(e)
+
+    # csv load하면 해당 경로 저장
+    def save_dir_csv(self, path_csv):
+        conn = sqlite3.connect(db_con)
+        cur = conn.cursor()
+        cur.execute("update Monitor set Path_csv = (%s)" % ("'" + path_csv + "'"))
+        conn.commit()
+        cur.close()
+        conn.close()
+
+    # csv load 버튼누르면 저장한 경로를 불러온다.
+    def open_dir_csv(self):
+        conn = sqlite3.connect(db_con)
+        cur = conn.cursor()
+        cur.execute("select Path_csv from Monitor")
+        dir_csv = cur.fetchall()
+        cur.close()
+        conn.close()
+        return dir_csv[0][0]

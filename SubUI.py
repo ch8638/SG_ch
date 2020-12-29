@@ -26,8 +26,10 @@ class Ui_MainWindow(QtWidgets.QDialog):
     smp_count_1 = 0
     smp_count_2 = 0
     path_csv = ""
+    dir_csv = ""
     temp_src = ""
-    use_bcd = "Not used"
+    use_bcd = "PCR Plate and DWP"
+    worklist_name = ""
     Sel_Signal = 0
     bcd_list = []
     temp_bcd_list = []
@@ -39,8 +41,9 @@ class Ui_MainWindow(QtWidgets.QDialog):
 
     def initUI(self):
         plrn_path, bcd_path = self.DB.display_path()
-
-        self.setWindowTitle("Seegene WorkList")
+        self.setWindowIcon(QtGui.QIcon('C:/Program Files/SYM-BIO/PreNAT II/icon_TCW.png'))
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowTitle("TCW")
         self.setWindowModality(QtCore.Qt.ApplicationModal)
         self.resize(770, 800)
         self.tabWidget = QtWidgets.QTabWidget(self)
@@ -705,7 +708,9 @@ class Ui_MainWindow(QtWidgets.QDialog):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("MainWindow", "Seegene WorkList"))
+        # self.setWindowIcon(QtGui.QIcon('C:\WorkList\icon_TCW.png')) # 아이콘
+        # self.setWindowIcon(QtGui.QIcon('icon_TCW.png'))
+        self.setWindowTitle(_translate("MainWindow", "TCW"))
         self.toolButton_load.setText(_translate("MainWindow", "..."))
         self.toolButton_plrn_path.setText(_translate("MainWindow", "..."))
         self.toolButton_worklist_path.setText(_translate("MainWindow", "..."))
@@ -1111,6 +1116,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
     # 샘플 개수 OK
     def Count_smp(self):
         count = self.lineEdit_smp_count.text()
+        self.path_csv = ""
         try:
             if int(count) < 1:
                 QtWidgets.QMessageBox.information(self, "System", "Please enter a number of 1 or more.")
@@ -1133,20 +1139,59 @@ class Ui_MainWindow(QtWidgets.QDialog):
     # Load WorkList
     def Load_csv(self):
         csv_header = []
-        fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File', '', 'csv File(*.csv);; csv File(*.csv)')
+        temp_1 = []
+        csv_item = []
+        temp = 0
+        load_check = 0
+
+        fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Open File', f'{self.DB.open_dir_csv()}', 'csv File(*.csv);; csv File(*.csv)')
         if fname[0]:
             self.path_csv = fname[0]
-            csv_file = pd.read_csv(fname[0], encoding='CP949')
+            temp_1 = fname[0].split("/")
+            self.worklist_name = temp_1[-1].replace(".csv", "")
+
+            del temp_1[-1]
+            self.dir_csv = "/".join(temp_1)
+            self.DB.save_dir_csv(self.dir_csv)
+
+            csv_file = pd.read_csv(fname[0], encoding='utf-8')
             rdr = csv.reader(csv_file)
             for line in rdr:
                 csv_header.append(line)
+
+            load_item = csv_file[csv_header[4]]
+            item_val = load_item.values.tolist()
+
+            for i in range(len(item_val)):
+                if item_val[i][0] != True:
+                    QtWidgets.QMessageBox.information(self, "System", "WorkList Csv File Not Corrected")
+                    return
+
+            sel_txt = self.DB.Sel_Bcd()
+            sel_txt = sel_txt[0][0]
+            load_check = sel_txt.find(csv_header[4][0])
+            if load_check == -1:
+                QtWidgets.QMessageBox.information(self, "System", "WorkList Csv File Not Corrected")
+                return
+
+            load_headitem = self.DB.Sel_Protocol()
+
+            for i in range(len(load_headitem)):
+                if csv_header[4][0] == load_headitem[i][0]:
+                    temp = 1
+
+            if temp == 0:
+                QtWidgets.QMessageBox.information(self, "System",
+                                                      "Selected protocol does not exist in the database.")
+                return
+
             load_bcd = csv_file['Barcode']
             bcd_val = load_bcd.values.tolist()
             self.tableWidget_smp.setRowCount(len(bcd_val))
             self.lineEdit_smp_count.setText(str(len(bcd_val)))
             for i in range(len(bcd_val)):
                 self.tableWidget_smp.setItem(i, 0, QtWidgets.QTableWidgetItem(str(bcd_val[i])))
-            Ui_MainWindow.temp_bcd_list = bcd_val
+            self.temp_bcd_list = bcd_val
         else:
             QtWidgets.QMessageBox.information(self, "System", "No file selected.")
         self.Reload()
@@ -1171,7 +1216,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
     # Run 버튼(DB에 정보 입력, plrn 생성)
     def Run(self):
         try:
-            QtWidgets.QMessageBox.information(self, "System", "Please close the door.")
+            QtWidgets.QMessageBox.information(self, "System", "Please close the door and click 'Run'.")
             test_count = self.textBrowser_testcount.toPlainText()
             smp_count = self.tableWidget_smp_select.rowCount()
             count = int(test_count) - smp_count
@@ -1194,7 +1239,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
                 if self.tableWidget_smp.item(0, 0) is not None:
                     for j in range(rowCount):
                         worklist_bcd.append(self.tableWidget_smp.item(j, 0).text())
-                self.DB.Create_barcode(id_plrn, worklist_bcd, self.path_csv)
+                self.DB.Create_barcode(id_plrn, worklist_bcd, self.path_csv, self.worklist_name)
                 self.DB.delete_bcd()
                 self.textBrowser_testcount.setText(str(count))
 
