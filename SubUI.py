@@ -805,7 +805,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
         self.buttonGroup_3.buttonClicked.connect(self.Select_cap)
         self.buttonGroup_4.buttonClicked.connect(self.Select_ctrl)
         self.buttonGroup_5.buttonClicked.connect(self.Select_use_bcd)
-        self.toolButton_plrn_path.clicked.connect(lambda: self.plrn_path(1))
+        self.toolButton_plrn_path.clicked.connect(lambda: self.plrn_path(1)) # 기본 plrn 경로
         self.pushButton_run.clicked.connect(self.Run)
 
         self.lineEdit_pcr_bcd.returnPressed.connect(self.display_test_count)
@@ -815,11 +815,11 @@ class Ui_MainWindow(QtWidgets.QDialog):
 
         self.add_path_2.clicked.connect(lambda: self.enable_path(2))  # add path 체크
         self.add_path_3.clicked.connect(lambda: self.enable_path(3))
-        self.toolButton_plrn_path_2.clicked.connect(lambda: self.plrn_path(2))  # add dir
-        self.toolButton_plrn_path_3.clicked.connect(lambda: self.plrn_path(3))
+        self.toolButton_plrn_path_2.clicked.connect(lambda: self.plrn_path(2)) # 추가 plrn 경로 2
+        self.toolButton_plrn_path_3.clicked.connect(lambda: self.plrn_path(3)) # 추가 plrn 경로 3
 
-        self.toolButton_worklist_path.clicked.connect(lambda: self.plrn_path(4))
-        self.toolButton_inst_path.clicked.connect(lambda: self.plrn_path(5))
+        self.toolButton_worklist_path.clicked.connect(lambda: self.plrn_path(4)) # Worklist 바코드 파일 경로
+        self.toolButton_inst_path.clicked.connect(lambda: self.plrn_path(5)) # instrument 바코드 파일 경로
 
         self.pushButton_confirm.clicked.connect(self.Confirm)
         self.pushButton_cancel.clicked.connect(self.Cancel)
@@ -1097,15 +1097,21 @@ class Ui_MainWindow(QtWidgets.QDialog):
     def plrn_path(self, i):
         dir_path = QtWidgets.QFileDialog.getExistingDirectory()
         if dir_path != "":
-            if i == 1:
+            if i == 1: # 기본 plrn 경로
                 self.textBrowser_plrn_path.setText(dir_path)
                 self.DB.set_dir(dir_path, 1)
-            elif i == 2:
-                self.textBrowser_plrn_path_2.setText(dir_path)
-                self.DB.set_dir(dir_path, 2)
-            elif i == 3:
-                self.textBrowser_plrn_path_3.setText(dir_path)
-                self.DB.set_dir(dir_path, 3)
+            elif i == 2: # 추가 plrn 경로 2
+                if self.textBrowser_plrn_path.toPlainText() == str(dir_path) or self.textBrowser_plrn_path_3.toPlainText() == str(dir_path): # 이미 지정된 경로이면
+                    QtWidgets.QMessageBox.information(self, "System", "This path is already specified. Please change the path.")
+                else:
+                    self.textBrowser_plrn_path_2.setText(dir_path)
+                    self.DB.set_dir(dir_path, 2)
+            elif i == 3: # 추가 plrn 경로 3
+                if self.textBrowser_plrn_path.toPlainText() == str(dir_path) or self.textBrowser_plrn_path_2.toPlainText() == str(dir_path): # 이미 지정된 경로이면
+                    QtWidgets.QMessageBox.information(self, "System", "This path is already specified. Please change the path.")
+                else:
+                    self.textBrowser_plrn_path_3.setText(dir_path)
+                    self.DB.set_dir(dir_path, 3)
             elif i == 4:  # WorkList 파일
                 self.textBrowser_worklist_path.setText(dir_path)
                 self.DB.set_dir(dir_path, 4)
