@@ -41,7 +41,7 @@ class Ui_MainWindow(QtWidgets.QDialog):
 
     def initUI(self):
         plrn_path, bcd_path = self.DB.display_path()
-        self.setWindowIcon(QtGui.QIcon('C:/Program Files/SYM-BIO/PreNAT II/icon_TCW.png'))
+        # self.setWindowIcon(QtGui.QIcon('C:/Program Files/SYM-BIO/PreNAT II/icon_TCW.png'))
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
         self.setWindowTitle("TCW")
         self.setWindowModality(QtCore.Qt.ApplicationModal)
